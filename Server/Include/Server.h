@@ -19,8 +19,6 @@
 #include <mutex>
 #include <iostream>
 #include <fstream>
-#include <memory>
-#include <queue>
 
 #include <csignal>
 

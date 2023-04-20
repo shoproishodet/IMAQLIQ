@@ -22,21 +22,19 @@ void Server::ConnectionHandler() {
 }
 
 void Server::ReadUntilEndOfConnection() {
+    streambuf sockBuf;
     while (areWorked.load()) {
         std::unique_lock<std::mutex> lock(socketsAccess);
         for (auto &sock : sockets) {
             if (!sock.available())
                 continue;
 
-            streambuf sockBuf;
-
-            char delim = ' ';
 
             boost::system::error_code ec;
             size_t consumeSize = read(sock, sockBuf, transfer_exactly(sock.available()), ec);
 
             if (ec) {
-                std::cerr << "Can't read data size from socket!" << std::endl;
+                std::cerr << "Can't read data from socket!" << std::endl;
                 continue;
             }
 
@@ -72,7 +70,6 @@ void Server::Run() {
     while (areWorked.load())
         std::this_thread::sleep_for(std::chrono::seconds (1));
 
-
     threadPool[0].detach();
     threadPool[1].join();
 }
@@ -100,15 +97,16 @@ void Server::Close(int sigNum) {
     for (auto &sock : sockets)
         sock.close();
 
+    lock.unlock();
+
     std::ofstream fileStream("available_file_id.txt");
 
     if (!fileStream.is_open()) {
         std::cerr << "Error occurred, can't open available_file_id.txt" << std::endl;
-        exit(OPEN_FILE_ERROR);
+    } else {
+        fileStream << fileId;
+        fileStream.close();
     }
-
-    fileStream << fileId + 1;
-    fileStream.close();
 }
 
 void Server::Parsing(streambuf &buf) {
@@ -131,12 +129,12 @@ void Server::Parsing(streambuf &buf) {
 
         std::ofstream file("outputFiles/received_file_id_" + std::to_string(fileId++) + ".txt");
 
-        if (!file.is_open())
+        if (!file.is_open()) {
             std::cerr << "Create file error occurred!" << std::endl;
+            continue;
+        }
 
         file.write(toWrite.data(), fileSize);
         file.close();
     }
-
-
 }

@@ -1,6 +1,5 @@
 #include "Client.h"
-#include <string>
-#include <iostream>
+
 
 Client::Client() noexcept : sock(ioService) {}
 

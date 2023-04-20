@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
+
 find_package(Boost REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
